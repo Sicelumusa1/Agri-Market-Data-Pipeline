@@ -1,6 +1,9 @@
 name: Terraform CI/CD
 
 on:
+
+  workflow_dispatch: 
+
   pull_request:
     branches: [master]
     paths:
