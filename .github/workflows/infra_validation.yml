@@ -68,8 +68,7 @@ jobs:
             -out=tfplan \
             -var="project_id=${{ env.GCP_PROJECT }}" \
             -var="region=${{ env.GCP_REGION }}" \
-            -var="bucket_name=${{ env.BUCKET_NAME }}" \
-            -lock-timeout=60s
+            -var="bucket_name=${{ env.BUCKET_NAME }}" 
 
       - name: Upload Plan Artifact
         uses: actions/upload-artifact@v4
@@ -83,7 +82,7 @@ jobs:
     needs: terraform-plan
     runs-on: ubuntu-latest
 
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'workflow_dispatch'
 
     environment:
       name: production
@@ -116,8 +115,8 @@ jobs:
 
       - name: Terraform Init
         working-directory: infrastructure/terraform
-        run: terraform init -input=false -lock-timeout=60s
+        run: terraform init -input=false
 
       - name: Terraform Apply
         working-directory: infrastructure/terraform
-        run: terraform apply -auto-approve -var="bucket_name=${{ env.BUCKET_NAME }}" tfplan -lock-timeout=60s
+        run: terraform apply -auto-approve -var="bucket_name=${{ env.BUCKET_NAME }}" tfplan
