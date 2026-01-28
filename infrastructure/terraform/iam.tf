@@ -33,6 +33,6 @@ resource "google_iam_workload_identity_pool_provider" "github" {
 resource "google_service_account_iam_member" "wif_binding" {
   service_account_id = google_service_account.github_scraper.name
   role               = "roles/iam.workloadIdentityUser"
-  member = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.repository/Sicelumusa1/market-data-ingestion-scraper"
+  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.repository/Sicelumusa1/market-data-ingestion-scraper"
 }
 

@@ -1,6 +1,6 @@
 terraform {
   backend "gcs" {
-    bucket  = "market-data-tf-state"
-    prefix  = "infra"
+    bucket = "market-data-tf-state"
+    prefix = "infra"
   }
 }
