@@ -119,4 +119,4 @@ jobs:
 
       - name: Terraform Apply
         working-directory: infrastructure/terraform
-        run: terraform apply -auto-approve -var="bucket_name=${{ env.BUCKET_NAME }}" tfplan
+        run: terraform apply -auto-approve tfplan
