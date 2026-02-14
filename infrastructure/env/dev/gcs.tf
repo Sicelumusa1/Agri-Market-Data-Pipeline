@@ -1,7 +1,8 @@
 resource "google_storage_bucket" "scraper_bucket" {
   name          = var.bucket_name
-  location      = "US"
+  location      = var.region
   storage_class = "STANDARD"
+  force_destroy = true
 
   uniform_bucket_level_access = true
 
