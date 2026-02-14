@@ -1,4 +1,3 @@
-
 # Service account for GitHub Actions to manage dev environment
 resource "google_service_account" "github_actions" {
   account_id   = "github-actions-dev"
@@ -60,5 +59,29 @@ resource "google_project_iam_member" "service_account_admin" {
 resource "google_project_iam_member" "storage_admin" {
   project = var.project_id
   role    = "roles/storage.admin"
+  member  = "serviceAccount:${google_service_account.github_actions.email}"
+}
+
+resource "google_project_iam_member" "bq_admin" {
+  project = var.project_id
+  role    = "roles/bigquery.admin"
+  member  = "serviceAccount:${google_service_account.github_actions.email}"
+}
+
+resource "google_project_iam_member" "artifact_registry_admin" {
+  project = var.project_id
+  role    = "roles/artifactregistry.admin"
+  member  = "serviceAccount:${google_service_account.github_actions.email}"
+}
+
+resource "google_project_iam_member" "cloud_run_admin" {
+  project = var.project_id
+  role    = "roles/run.admin"
+  member  = "serviceAccount:${google_service_account.github_actions.email}"
+}
+
+resource "google_project_iam_member" "eventarc_admin" {
+  project = var.project_id
+  role    = "roles/eventarc.admin"
   member  = "serviceAccount:${google_service_account.github_actions.email}"
 }
