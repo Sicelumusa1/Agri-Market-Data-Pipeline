@@ -27,7 +27,7 @@ sources:
           - name: qty_available
             description: "Quantity available"
           - name: scrape_date
-            description: "Date data was scraped"
+            description: "Market date"
           - name: file_date
             description: "Date from filename"
           - name: market
