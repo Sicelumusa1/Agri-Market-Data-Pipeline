@@ -56,9 +56,19 @@ variable "db_password" {
 }
 
 variable "kestra_db_ip" {
-  type        = string
+  type = string
 }
 
 variable "kestra_ui_user_email" {
+  type = string
+}
+
+variable "gemini_api_key" {
+  description = "API key for Google Gemini"
   type        = string
+  sensitive   = true
+}
+
+variable "gcs_prefix" {
+  type = string
 }
