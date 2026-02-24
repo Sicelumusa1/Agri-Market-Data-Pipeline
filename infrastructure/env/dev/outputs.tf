@@ -6,23 +6,20 @@ output "github_scraper_sa_email" {
   value = google_service_account.github_scraper.email
 }
 
-
-# FOR KESTRA
-
 output "kestra_ui_url" {
-  description = "Kestra UI URL - access the Kestra dashboard"
-  value       = "${google_cloud_run_v2_service.kestra.uri}/ui"
-}
-
-output "kestra_webhook_url" {
-  description = "Webhook URL for UPLOAD_DONE trigger"
-  value       = "https://${google_cloud_run_v2_service.kestra.uri}/api/v1/executions/webhook/agri-market/market-data-pipeline/${random_password.kestra_webhook_key.result}"
-  sensitive   = true
+  description = "URL to access Kestra UI"
+  value       = "https://${google_compute_address.kestra_vm.address}/ui"
 }
 
 output "kestra_api_url" {
   description = "Kestra API URL"
-  value       = google_cloud_run_v2_service.kestra.uri
+  value       = "https://${google_compute_address.kestra_vm.address}"
+}
+
+output "kestra_webhook_url" {
+  description = "Webhook URL for triggering pipelines"
+  value       = "https://${google_compute_address.kestra_vm.address}/api/v1/executions/webhook/agri-market/market-data-pipeline/${random_password.kestra_webhook_key.result}"
+  sensitive   = true
 }
 
 output "kestra_db_connection" {
