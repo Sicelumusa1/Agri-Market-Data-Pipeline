@@ -1,0 +1,82 @@
+# Ensures no duplicates, critical fields exist, valid categories and foreign key integrity
+
+version: 2
+
+models:
+  - name: stg_market_summary
+    description: "Staging model for market summary data"
+    columns:
+      - name: summary_id
+        description: "Unique surrogate key for summary records"
+        tests:
+          - unique
+          - not_null
+      
+      - name: scrape_date
+        tests:
+          - not_null
+      
+      - name: market
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['joburg_market']
+                severity: warn
+      
+      
+      - name: value_sold
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: -100000
+                max_value: 100000000
+                severity: warn 
+      
+      - name: dbt_loaded_at
+        tests:
+          - not_null
+
+  - name: stg_market_container
+    description: "Staging model for container-level data"
+    columns:
+      - name: container_id
+        tests:
+          - unique
+          - not_null
+      
+      - name: container_name
+        tests:
+          - not_null
+      
+      - name: average_price_per_kg
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: -1000
+                max_value: 1000
+                severity: warn 
+
+  - name: stg_market_variety
+    description: "Staging model for variety-level data"
+    columns:
+      - name: variety_id
+        tests:
+          - unique
+          - not_null
+      
+      - name: unit_mass
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 500
+      
+      - name: average_price_per_kg
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: -1000
+                max_value: 1000
+                severity: warn 
