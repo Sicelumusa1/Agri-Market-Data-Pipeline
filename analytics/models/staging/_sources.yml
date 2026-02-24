@@ -1,0 +1,84 @@
+# Where to find the cleaned raw data in Bigquery
+
+version: 2
+
+sources:
+  - name: market_data
+    description: "Silver layer tables created by dlt pipeline"
+    database: agri-market-intelligence-dev
+    schema: market_data
+    
+    tables:
+      - name: market_summary
+        description: "Daily market summary data - one row per market per day"
+        columns:
+          - name: value_sold
+            description: "Daily value sold (R)"
+          - name: value_sold_mtd
+            description: "Month-to-date value sold (R)"
+          - name: qty_sold
+            description: "Daily quantity sold"
+          - name: qty_sold_mtd
+            description: "Month-to-date quantity sold"
+          - name: kg_sold
+            description: "Daily kg sold"
+          - name: kg_sold_mtd
+            description: "Month-to-date kg sold"
+          - name: qty_available
+            description: "Quantity available"
+          - name: scrape_date
+            description: "Market date"
+          - name: file_date
+            description: "Date from filename"
+          - name: market
+            description: "Market identifier"
+          - name: commodity
+            description: "Commodity type"
+          - name: _dlt_load_id
+            description: "dlt metadata - load ID"
+          - name: _dlt_id
+            description: "dlt metadata - row ID"
+      
+      - name: market_container
+        description: "Container-level data - one row per container type"
+        columns:
+          - name: value_sold
+          - name: value_sold_mtd
+          - name: qty_sold
+          - name: qty_sold_mtd
+          - name: kg_sold
+          - name: kg_sold_mtd
+          - name: qty_available
+          - name: average_price_per_kg
+          - name: scrape_date
+          - name: file_date
+          - name: market
+          - name: commodity
+          - name: container_name
+          - name: _dlt_load_id
+          - name: _dlt_id
+      
+      - name: market_variety
+        description: "Variety-level data - most granular, one row per variety per container"
+        columns:
+          - name: value_sold
+          - name: qty_sold
+          - name: kg_sold
+          - name: average_price
+          - name: highest_price
+          - name: average_price_per_kg
+          - name: highest_price_per_kg
+          - name: unit_mass
+          - name: scrape_date
+          - name: file_date
+          - name: market
+          - name: commodity
+          - name: container_name
+          - name: variety
+          - name: product_class
+          - name: product_size
+          - name: product_count
+          - name: product_color
+          - name: original_product_string
+          - name: _dlt_load_id
+          - name: _dlt_id
