@@ -76,13 +76,11 @@ models:
               arguments:
                 values: ['Summer', 'Autumn', 'Winter', 'Spring']
       
-      # - name: is_weekend
-      #   description: "1 for Saturday/Sunday, 0 for weekdays"
-      #   tests:
-      #     - not_null
-      #     - accepted_integer_values:
-      #         arguments:
-      #           values: [0, 1]
+      - name: is_weekend
+        description: "1 for Saturday/Sunday, 0 for weekdays"
+        tests:
+          - not_null
+
       
       # Business Metrics
       - name: average_price_per_kg

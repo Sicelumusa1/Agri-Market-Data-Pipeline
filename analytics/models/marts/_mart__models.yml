@@ -1,0 +1,170 @@
+version: 2
+
+models:
+  - name: daily_market_snapshot
+    description: "Daily market snapshot for farmers - what to sell today"
+
+    columns:
+
+      - name: market_date
+        description: "Date of market data"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: "date('2020-01-01')"
+                max_value: "current_date()"
+
+      - name: market
+        description: "Market identifier"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['joburg_market']
+
+      - name: commodity
+        description: "Commodity name"
+        tests:
+          - not_null
+
+      - name: variety
+        description: "Specific variety"
+        tests:
+          - not_null
+
+      - name: container_type
+        description: "Type of container"
+        tests:
+          - not_null
+
+      - name: grade
+        description: "Quality grade"
+        tests:
+          - not_null
+
+      - name: avg_price_per_kg
+        description: "Average price per kilogram"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: -3000
+                max_value: 5000
+
+      - name: max_price_achieved
+        description: "Highest price achieved"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: -3000
+                max_value: 5000
+
+      - name: min_price_observed
+        description: "Lowest price observed"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: -3000
+                max_value: 5000
+
+      - name: price_rank_within_commodity
+        description: "Price rank among all varieties (1 = highest)"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+                max_value: 100
+
+      - name: price_rank_within_variety
+        description: "Rank within same variety across containers"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+                max_value: 50
+
+      - name: container_score
+        description: "Composite score for container performance"
+        tests:
+          - not_null
+
+      - name: container_recommendation
+        description: "Recommendation for this container"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Recommended', 'Consider', 'Avoid']
+
+      - name: recommendation_reason
+        description: "Reason for recommendation"
+        tests:
+          - not_null
+
+      - name: volume_comparison
+        description: "How today's volume compares to historical"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - 'Insufficient Data'
+                  - 'Well Above Normal'
+                  - 'Above Normal'
+                  - 'Normal'
+                  - 'Below Normal'
+                  - 'Well Below Normal'
+
+      - name: price_stability
+        description: "Price stability indicator"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - 'Very Stable'
+                  - 'Stable'
+                  - 'Moderate'
+                  - 'Volatile'
+
+      - name: data_quality_flag
+        description: "Confidence in this data"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['High', 'Medium', 'Low']
+
+      - name: is_premium
+        description: "Whether this is a premium item (>20% above average)"
+        tests:
+          - not_null
+
+    # Model-level tests
+
+    tests:
+
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - market_date
+              - market
+              - commodity
+              - variety
+              - container_type
+              - grade
+
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: >
+              avg_price_per_kg >= min_price_observed
+              and avg_price_per_kg <= max_price_achieved
+            condition: >
+              avg_price_per_kg is not null
+              and min_price_observed is not null
+              and max_price_achieved is not null
