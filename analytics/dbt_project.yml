@@ -39,21 +39,20 @@ models:
   agrimi:
     # Bigquery
     +materialized: view
-    +dataset: market_data
 
     staging:
       +materialized: view
-      +dataset: staging
+      +schema: staging
       +tags: ["staging"]
 
     intermediate:
       +materialized: table
-      +dataset: intermediate
+      +schema: intermediate
       +tags: ["intermediate"]
 
     marts:
       +materialized: table
-      +dataset: marts
+      +schema: marts
       +tags: ["marts"]
       daily_market_snapshot:
         +partition_by:
