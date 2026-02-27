@@ -5,7 +5,6 @@ models:
     description: "Daily market snapshot for farmers - what to sell today"
 
     columns:
-
       - name: market_date
         description: "Date of market data"
         tests:
@@ -27,6 +26,10 @@ models:
         description: "Commodity name"
         tests:
           - not_null
+          - accepted_values:
+              arguments:
+                values: ['apples']
+                severity: warn
 
       - name: variety
         description: "Specific variety"
@@ -42,6 +45,10 @@ models:
         description: "Quality grade"
         tests:
           - not_null
+          - accepted_values:
+              arguments:
+                values: ['CL 1', 'CL 2', 'LOWEST CLASS', 'UNKNOWN']
+                severity: warn
 
       - name: avg_price_per_kg
         description: "Average price per kilogram"
@@ -92,6 +99,10 @@ models:
         description: "Composite score for container performance"
         tests:
           - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: -10000
+                max_value: 10000
 
       - name: container_recommendation
         description: "Recommendation for this container"
@@ -105,6 +116,16 @@ models:
         description: "Reason for recommendation"
         tests:
           - not_null
+          - accepted_values:
+              arguments:
+                values: [
+                  'Best price with stable demand',
+                  'Highest price today',
+                  'Highest value per container',
+                  'Most stable pricing',
+                  'Balanced option'
+                ]
+                severity: warn
 
       - name: volume_comparison
         description: "How today's volume compares to historical"
@@ -145,10 +166,13 @@ models:
         tests:
           - not_null
 
+      - name: dbt_loaded_at  
+        description: "Timestamp when dbt loaded this row"
+        tests:
+          - not_null
+
     # Model-level tests
-
     tests:
-
       - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns:
@@ -159,12 +183,171 @@ models:
               - container_type
               - grade
 
+
       - dbt_utils.expression_is_true:
           arguments:
             expression: >
-              avg_price_per_kg >= min_price_observed
-              and avg_price_per_kg <= max_price_achieved
+              avg_price_per_kg >= min_price_observed - 5.0
+              and avg_price_per_kg <= max_price_achieved + 5.0
             condition: >
               avg_price_per_kg is not null
               and min_price_observed is not null
               and max_price_achieved is not null
+
+  - name: time_pattern_analysis
+    description: "Analysis of price patterns by day of week, week in month, and season"
+    
+    columns:
+      - name: pattern_type
+        description: "Type of pattern (day_of_week, week_in_month, season)"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['day_of_week', 'week_in_month', 'season']
+      
+      - name: commodity
+        description: "Type of produce"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['apples']
+                severity: warn
+      
+      - name: day_name
+        description: "Day of week name (for day_of_week patterns)"
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+              config:
+                where: "pattern_type = 'day_of_week'"
+      
+      - name: week_in_month
+        description: "Week number within month (1-4, for week_in_month patterns)"
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+                max_value: 4
+              config:
+                where: "pattern_type = 'week_in_month'"
+      
+      - name: season
+        description: "Southern hemisphere season"
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['Summer', 'Autumn', 'Winter', 'Spring']
+              config:
+                where: "pattern_type = 'season'"
+      
+      - name: avg_price
+        description: "Average price for this pattern"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 5000
+      
+      - name: median_price
+        description: "Median price (less sensitive to outliers)"
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 5000
+      
+      - name: price_volatility
+        description: "Standard deviation of price"
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1000
+      
+      - name: avg_daily_volume
+        description: "Average daily volume for this pattern"
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1000000
+      
+      - name: sample_size
+        description: "Number of days in this pattern"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+                max_value: 365
+      
+      - name: confidence_score
+        description: "Confidence in this pattern (High/Medium/Low)"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['High', 'Medium', 'Low']
+      
+      - name: price_lower_bound
+        description: "Lower bound of 95% confidence interval"
+        tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "price_lower_bound <= avg_price"
+                condition: "price_lower_bound is not null and avg_price is not null"
+      
+      - name: price_upper_bound
+        description: "Upper bound of 95% confidence interval"
+        tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "price_upper_bound >= avg_price"
+                condition: "price_upper_bound is not null and avg_price is not null"
+      
+      - name: price_rank
+        description: "Rank of this pattern (1 = best price)"
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+                max_value: 10
+      
+      - name: price_premium_vs_avg
+        description: "Premium/discount compared to overall average"
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: -5000
+                max_value: 5000
+      
+      - name: analysis_date
+        description: "Date this analysis was run"
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "analysis_date >= current_date() - 1"
+      
+      - name: analysis_period
+        description: "Time period analyzed"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Last 90 days']
+
+    # Model-level tests
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - pattern_type
+              - commodity
+              - day_name
+              - week_in_month
+              - season

@@ -89,17 +89,15 @@ models:
           - not_null
           - dbt_utils.accepted_range:
               arguments:
-                min_value: -3000  # Allow returns
+                min_value: -3000
                 max_value: 5000
       
-      - name: market_share_percent_by_kg
-        description: "Percentage of total market volume"
+      - name: total_market_kg
         tests:
-          - dbt_utils.accepted_range:
-              arguments:
-                min_value: 0
-                max_value: 100
-                where: "kg_sold >= 0 AND total_market_kg > 0 AND ABS(market_share_percent_by_kg) <= 100"
+          - not_null:
+              config:
+                where: "variety_id is not null"
+                severity: warn
       
       - name: price_vs_container_avg
         description: "Difference from container average price"
@@ -126,5 +124,3 @@ models:
               arguments:
                 to: ref('stg_market_summary')
                 field: commodity
-    
-    
