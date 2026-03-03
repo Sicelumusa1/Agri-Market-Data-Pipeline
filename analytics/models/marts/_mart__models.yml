@@ -351,3 +351,167 @@ models:
               - day_name
               - week_in_month
               - season
+
+  - name: product_optimization
+    description: "Analysis of product configurations to identify optimal packing strategies"
+    
+    columns:
+      - name: commodity
+        description: "Type of produce"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['apples']
+                severity: warn
+      
+      - name: variety
+        description: "Specific variety"
+        tests:
+          - not_null
+      
+      - name: container_type
+        description: "Type of container"
+        tests:
+          - not_null
+      
+      - name: size_category
+        description: "Size category (Small, Medium, Large, Extra Large, or S/M/L)"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Small', 'Medium', 'Large', 'Extra Large', 'S', 'M', 'L', 'XL']
+                severity: warn
+      
+      - name: grade
+        description: "Quality grade"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['CL 1', 'CL 2', 'LOWEST CLASS', 'UNKNOWN']
+                severity: warn
+      
+      - name: avg_price_per_kg
+        description: "Average price per kilogram"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 5000
+      
+      - name: avg_value_per_container
+        description: "Average value per container"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 100000
+      
+      - name: total_kg_sold
+        description: "Total kilograms sold"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 10000000
+      
+      - name: market_share_percent
+        description: "Percentage of total market volume"
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 100
+      
+      - name: optimization_score
+        description: "Composite score (price volume) for ranking"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 10000
+      
+      - name: price_stability
+        description: "Price stability indicator"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Very Stable', 'Stable', 'Moderate', 'Volatile']
+      
+      - name: volume_trend_pct
+        description: "Percentage change in volume (30-day trend)"
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: -100
+                max_value: 100000
+      
+      - name: rank_by_price
+        description: "Rank by price (1 = highest)"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+                max_value: 3000
+      
+      - name: rank_by_volume
+        description: "Rank by volume (1 = highest)"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+                max_value: 3000
+      
+      - name: overall_rank
+        description: "Overall rank based on optimization score"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+                max_value: 3000
+      
+      - name: performance_tier
+        description: "Performance category based on overall rank"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Top Performer', 'Strong Performer', 'Average Performer', 'Low Performer']
+      
+      - name: analysis_date
+        description: "Date this analysis was run"
+        tests:
+          - not_null
+      
+      - name: analysis_period
+        description: "Time period analyzed"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Last 90 days']
+
+    # Model-level tests
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - commodity
+              - variety
+              - container_type
+              - size_category
+              - grade
+      
+      - dbt_utils.expression_is_true:
+          arguments: 
+            expression: "optimization_score >= 0"
