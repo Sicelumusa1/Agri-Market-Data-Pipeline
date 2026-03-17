@@ -480,6 +480,7 @@ models:
                 min_value: 1
                 max_value: 3000
       
+      
       - name: performance_tier
         description: "Performance category based on overall rank"
         tests:
@@ -515,3 +516,222 @@ models:
       - dbt_utils.expression_is_true:
           arguments: 
             expression: "optimization_score >= 0"
+
+
+  - name: market_trends_analysis
+    description: "Strategic market intelligence - where is the market heading?"
+    
+    columns:
+      
+      # Core market metrics
+      - name: total_volume
+        description: "Total volume sold (kg)"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 10000000
+      
+      - name: total_value
+        description: "Total value sold (R)"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 100000000
+      
+      - name: avg_price_per_kg
+        description: "Average price per kg"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 5000
+      
+      - name: premium_value
+        description: "Value of premium sales (>30% above avg)"
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 100000000
+      
+      - name: active_varieties
+        description: "Number of active varieties"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+                max_value: 100
+      
+      # Change metrics
+      - name: volume_change_wow_pct
+        description: "Week-over-week volume change percentage"
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: -100
+                max_value: 10000
+      
+      - name: price_change_wow_pct
+        description: "Week-over-week price change percentage"
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: -100
+                max_value: 1000
+                where: "price_change_wow_pct is not null"
+      
+      - name: volume_change_yoy_pct
+        description: "Year-over-year volume change percentage"
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: -100
+                max_value: 5000
+                where: "volume_change_yoy_pct is not null"
+                config:
+                  severity: warn
+      
+      - name: price_change_yoy_pct
+        description: "Year-over-year price change percentage"
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: -100
+                max_value: 500
+                where: "price_change_yoy_pct is not null"
+                config:
+                  severity: warn
+      
+      # Trend directions
+      - name: volume_trend_direction
+        description: "Direction of volume trend (Surging/Rising/Stable/Falling)"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Surging Demand', 'Rising', 'Stable', 'Falling Demand']
+      
+      - name: price_trend_direction
+        description: "Direction of price trend (Rising/Stable/Dropping)"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Rising Prices', 'Stable', 'Dropping Prices']
+      
+      # Market health
+      - name: market_health_score
+        description: "Overall market health (0-100)"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 100
+      
+      - name: market_condition
+        description: "Market condition classification"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Booming', 'Growing', 'Stable', 'Slowing', 'Declining']
+      
+      # Risk metrics
+      - name: price_volatility
+        description: "30-day price volatility (standard deviation)"
+        tests:
+          # - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 100
+                where: "price_volatility is not null"
+      
+      - name: premium_percentage
+        description: "Percentage of sales that are premium"
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 100
+      
+      # Strategic flags
+      - name: is_hot_opportunity
+        description: "Flag for hot market opportunities (rising prices + surging demand)"
+        tests:
+          - not_null
+          # - accepted_values:
+          #     arguments:
+          #       values: [true, false]
+      
+      - name: is_high_risk
+        description: "Flag for high risk markets (high volatility or low health)"
+        tests:
+          - not_null
+          # - accepted_values:
+          #     arguments:
+                # values: [true, false]
+                # where: "is_high_risk is not null"
+      
+      # Data quality
+      - name: data_confidence_score
+        description: "Number of days in 7-day rolling window (1-7)"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+                max_value: 7
+      
+      # Metadata
+      - name: analysis_date
+        description: "Date this analysis was run"
+        tests:
+          - not_null
+
+    # Model-level tests
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - market_date
+              - market
+              - commodity
+      
+      - dbt_utils.expression_is_true:
+          arguments: 
+            expression: "avg_price_per_kg > 0"
+            condition: "avg_price_per_kg is not null"
+        
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "total_volume >= 0"
+      
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "premium_value <= total_value"
+            condition: "premium_value is not null and total_value is not null"
+      
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "premium_percentage between 0 and 100"
+            condition: "premium_percentage is not null"
+      
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "data_confidence_score between 1 and 7"
+      
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "market_health_score between 0 and 100"
+      
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "case when is_hot_opportunity then price_trend_direction = 'Rising Prices' and volume_trend_direction = 'Surging Demand' else true end"
