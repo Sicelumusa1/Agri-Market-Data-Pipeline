@@ -32,7 +32,7 @@ ENV DBT_PROFILES_DIR=/app
 ENV DBT_PROJECT_DIR=/app
 
 # Copy dependency file first for caching
-COPY packages.yml .
+COPY dbt_project.yml packages.yml ./
 
 RUN dbt deps
 
