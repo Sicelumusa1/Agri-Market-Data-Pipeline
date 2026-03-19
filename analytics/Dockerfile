@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # dbt environment
-ENV DBT_PROFILES_DIR=/app
+ENV DBT_PROFILES_DIR=/app/dbt
 ENV DBT_PROJECT_DIR=/app
 
 # Copy dependency file first for caching
