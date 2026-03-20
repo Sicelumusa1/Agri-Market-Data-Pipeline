@@ -17,7 +17,8 @@ container AS (
     SELECT 
         scrape_date, market, commodity, container_name,
         average_price_per_kg AS container_avg_price_per_kg,
-        kg_sold AS container_kg_sold
+        kg_sold AS container_kg_sold,
+        qty_available AS container_qty_available
     FROM {{ ref('stg_market_container') }}
 ),
 
@@ -25,7 +26,8 @@ summary AS (
     SELECT 
         scrape_date, market, commodity,
         kg_sold AS total_market_kg,
-        value_sold AS total_market_value
+        value_sold AS total_market_value,
+        qty_available AS total_market_qty_available
     FROM {{ ref('stg_market_summary') }}
 ),
 
@@ -43,8 +45,12 @@ enriched AS (
         
         -- Bring in reference metrics
         c.container_avg_price_per_kg,
+        c.container_kg_sold,
+        c.container_qty_available,
+
         s.total_market_kg,
         s.total_market_value,
+        s.total_market_qty_available,
         
         -- Price Comparisons
         ROUND(v.average_price_per_kg - c.container_avg_price_per_kg, 2) AS price_vs_container_avg,
