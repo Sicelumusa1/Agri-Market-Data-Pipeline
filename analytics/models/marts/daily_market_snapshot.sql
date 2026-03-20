@@ -31,6 +31,7 @@ daily_variety_stats AS (
         ROUND(SAFE_DIVIDE(SUM(value_sold), SUM(kg_sold)), 2) AS avg_price_per_kg,
         MAX(average_price_per_kg) AS max_price_achieved,
         MIN(average_price_per_kg) AS min_price_observed,
+        MAX(container_qty_available) AS qty_available,
         
         -- Volume metrics
         SUM(kg_sold) AS total_kg_sold,
@@ -84,6 +85,13 @@ with_historical_context AS (
             ORDER BY market_date
             ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
         ) AS seven_day_avg_price,
+
+        -- 30-day average availability:
+        AVG(qty_available) OVER (
+            PARTITION BY market, commodity, variety, container_name, grade
+            ORDER BY market_date
+            ROWS BETWEEN 29 PRECEDING AND CURRENT ROW
+        ) AS thirty_day_avg_available,
         
         -- 30-day average volume
         AVG(total_kg_sold) OVER (
@@ -171,7 +179,18 @@ final AS (
             WHEN transaction_count > 10 AND (price_volatility_30day < 5 OR price_volatility_30day IS NULL) THEN 'High'
             WHEN transaction_count > 5 OR price_volatility_30day < 10 THEN 'Medium'
             ELSE 'Low'
-        END AS data_quality_flag
+        END AS data_quality_flag,
+        
+        -- NEXT DAY RECOMMENDATION (based on leftover inventory)
+        CASE 
+            WHEN thirty_day_avg_available IS NULL OR thirty_day_avg_available = 0 THEN 'Insufficient Data'
+            WHEN qty_available > thirty_day_avg_available * 1.5 THEN 'Very High Leftover - Reduce significantly'
+            WHEN qty_available > thirty_day_avg_available * 1.2 THEN 'High Leftover - Consider reducing'
+            WHEN qty_available > thirty_day_avg_available * 0.8 THEN 'Normal Leftover - Standard delivery'
+            WHEN qty_available > thirty_day_avg_available * 0.3 THEN 'Low Leftover - Bring extra'
+            WHEN qty_available > 0 THEN 'Very Low Leftover - Bring significantly more'
+            ELSE 'Sold Out - Bring maximum'
+        END AS next_day_recommendation
         
     FROM container_scoring
 )
@@ -196,9 +215,11 @@ SELECT
     recommendation_reason,      
     volume_comparison,
     ROUND(volume_vs_historical_pct, 1) AS volume_vs_historical_pct,
+    ROUND(SAFE_DIVIDE(qty_available, thirty_day_avg_available) * 100, 1) AS available_vs_normal_pct,
     price_stability,            
     is_premium,                
     data_quality_flag,
+    next_day_recommendation,
     CURRENT_TIMESTAMP() AS dbt_loaded_at
 FROM final
 WHERE market_date >= '2020-01-01'
