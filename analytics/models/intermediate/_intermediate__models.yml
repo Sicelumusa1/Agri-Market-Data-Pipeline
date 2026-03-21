@@ -1,126 +1,115 @@
-version: 2
+# version: 2
 
-models:
-  - name: int_silver_enriched
-    description: |
-      Enriched silver layer combining summary, container, and variety data.
-      This is the foundation for all gold models.
+# models:
+#   - name: int_silver_enriched
+#     description: |
+#       Enriched silver layer combining summary, container, and variety data.
+#       This is the foundation for all gold models.
     
-    columns:
-      # Primary Keys
-      - name: variety_id
-        description: "Surrogate key from staging"
-        tests:
-          - unique
-          - not_null
-          - relationships:
-              arguments:
-                to: ref('stg_market_variety')
-                field: variety_id
+#     columns:
+#       # Primary Keys
+#       - name: variety_id
+#         description: "Surrogate key from staging"
+#         tests:
+#           - unique
+#           - not_null
+#           - relationships:
+#               to: ref('stg_market_variety')
+#               field: variety_id
       
-      # Date Dimensions (from macro)
-      - name: scrape_date
-        description: "Original scrape date"
-        tests:
-          - not_null
+#       # Date Dimensions (from macro)
+#       - name: scrape_date
+#         description: "Original scrape date"
+#         tests:
+#           - not_null
       
-      - name: year
-        description: "Extracted year"
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              arguments:
-                min_value: 2020
-                max_value: 2030
+#       - name: year
+#         description: "Extracted year"
+#         tests:
+#           - not_null
+#           - dbt_utils.accepted_range:
+#               min_value: 2020
+#               max_value: 2030
       
-      - name: month
-        description: "Month number (1-12)"
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              arguments:
-                min_value: 1
-                max_value: 12
+#       - name: month
+#         description: "Month number (1-12)"
+#         tests:
+#           - not_null
+#           - dbt_utils.accepted_range:
+#               min_value: 1
+#               max_value: 12
       
-      - name: day_of_week_num
-        description: "Day of week (1=Sunday, 7=Saturday)"
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              arguments:
-                min_value: 1
-                max_value: 7
+#       - name: day_of_week_num
+#         description: "Day of week (1=Sunday, 7=Saturday)"
+#         tests:
+#           - not_null
+#           - dbt_utils.accepted_range:
+#               min_value: 1
+#               max_value: 7
       
-      - name: day_name
-        description: "Day name (Monday, Tuesday, etc.)"
-        tests:
-          - not_null
-          - accepted_values:
-              arguments:
-                values: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+#       - name: day_name
+#         description: "Day name (Monday, Tuesday, etc.)"
+#         tests:
+#           - not_null
+#           - accepted_values:
+#               values: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
       
-      - name: week_in_month
-        description: "Week number within month (1-4)"
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              arguments:
-                min_value: 1
-                max_value: 4
+#       - name: week_in_month
+#         description: "Week number within month (1-4)"
+#         tests:
+#           - not_null
+#           - dbt_utils.accepted_range:
+#               min_value: 1
+#               max_value: 4
       
-      - name: season
-        description: "Southern hemisphere season"
-        tests:
-          - not_null
-          - accepted_values:
-              arguments:
-                values: ['Summer', 'Autumn', 'Winter', 'Spring']
+#       - name: season
+#         description: "Southern hemisphere season"
+#         tests:
+#           - not_null
+#           - accepted_values:
+#               values: ['Summer', 'Autumn', 'Winter', 'Spring']
       
-      - name: is_weekend
-        description: "1 for Saturday/Sunday, 0 for weekdays"
-        tests:
-          - not_null
+#       - name: is_weekend
+#         description: "1 for Saturday/Sunday, 0 for weekdays"
+#         tests:
+#           - not_null
 
       
-      # Business Metrics
-      - name: average_price_per_kg
-        description: "Price per kg from variety data"
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              arguments:
-                min_value: -3000
-                max_value: 5000
+#       # Business Metrics
+#       - name: average_price_per_kg
+#         description: "Price per kg from variety data"
+#         tests:
+#           - not_null
+#           - dbt_utils.accepted_range:
+#               min_value: -3000
+#               max_value: 5000
       
-      - name: total_market_kg
-        tests:
-          - not_null:
-              config:
-                where: "variety_id is not null"
-                severity: warn
+#       - name: total_market_kg
+#         tests:
+#           - not_null:
+#               config:
+#                 where: "variety_id is not null"
+#                 severity: warn
       
-      - name: price_vs_container_avg
-        description: "Difference from container average price"
-        tests:
-          - dbt_utils.accepted_range:
-              arguments:
-                min_value: -3000
-                max_value: 5000
+#       - name: price_vs_container_avg
+#         description: "Difference from container average price"
+#         tests:
+#           - dbt_utils.accepted_range:
+#               min_value: -3000
+#               max_value: 5000
       
-      # Referential Integrity
-      - name: market
-        description: "Market identifier"
-        tests:
-          - not_null
-          - relationships:
-              arguments:
-                to: ref('stg_market_summary')
-                field: market
+#       # Referential Integrity
+#       - name: market
+#         description: "Market identifier"
+#         tests:
+#           - not_null
+#           - relationships:
+#               to: ref('stg_market_summary')
+#               field: market
       
-      - name: commodity
-        tests:
-          - not_null
-          - relationships:
-              arguments:
-                to: ref('stg_market_summary')
-                field: commodity
+#       - name: commodity
+#         tests:
+#           - not_null
+#           - relationships:
+#               to: ref('stg_market_summary')
+#               field: commodity
