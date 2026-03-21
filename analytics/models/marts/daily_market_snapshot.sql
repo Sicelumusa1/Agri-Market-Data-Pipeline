@@ -26,6 +26,7 @@ daily_variety_stats AS (
         COALESCE(grade, 'UNKNOWN') AS grade,
         size_value,
         color,
+
         
         -- Correct Weighted Price Calculation (volume-weighted to avoid skew)
         ROUND(SAFE_DIVIDE(SUM(value_sold), SUM(kg_sold)), 2) AS avg_price_per_kg,
@@ -49,7 +50,14 @@ daily_variety_stats AS (
         COUNT(*) AS transaction_count
         
     FROM silver
-    GROUP BY 1,2,3,4,5,6,7,8
+    GROUP BY scrape_date,
+        market,
+        commodity,
+        variety,
+        container_name,
+        COALESCE(grade, 'UNKNOWN'),
+        size_value,
+        color
 ),
 
 -- Add rankings WITHIN commodity (across all varieties)
@@ -202,6 +210,8 @@ SELECT
     variety,
     container_name AS container_type,
     grade,
+    size_value,
+    color,
     avg_price_per_kg,
     max_price_achieved,
     min_price_observed,
@@ -215,8 +225,12 @@ SELECT
     recommendation_reason,      
     volume_comparison,
     ROUND(volume_vs_historical_pct, 1) AS volume_vs_historical_pct,
-    ROUND(SAFE_DIVIDE(qty_available, thirty_day_avg_available) * 100, 1) AS available_vs_normal_pct,
-    price_stability,            
+    CASE 
+        WHEN thirty_day_avg_available IS NULL OR thirty_day_avg_available = 0 THEN NULL
+        ELSE ROUND((qty_available / thirty_day_avg_available) * 100, 1)
+    END AS available_vs_normal_pct,
+    price_stability,
+    qty_available,           
     is_premium,                
     data_quality_flag,
     next_day_recommendation,
