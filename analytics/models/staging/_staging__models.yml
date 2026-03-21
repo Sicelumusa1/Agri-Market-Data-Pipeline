@@ -20,19 +20,17 @@ models:
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['joburg_market']
-                severity: warn
+              values: ['joburg_market']
+              severity: warn
       
       
       - name: value_sold
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: -100000
-                max_value: 100000000
-                severity: warn 
+              min_value: -100000
+              max_value: 100000000
+              severity: warn 
       
       - name: dbt_loaded_at
         tests:
@@ -53,10 +51,9 @@ models:
       - name: average_price_per_kg
         tests:
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: -1000
-                max_value: 1000
-                severity: warn 
+              min_value: -1000
+              max_value: 1000
+              severity: warn 
 
   - name: stg_market_variety
     description: "Staging model for variety-level data"
@@ -69,14 +66,12 @@ models:
       - name: unit_mass
         tests:
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 0
-                max_value: 500
+              min_value: 0
+              max_value: 500
       
       - name: average_price_per_kg
         tests:
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: -1000
-                max_value: 1000
-                severity: warn 
+              min_value: -1000
+              max_value: 1000
+              severity: warn 

@@ -14,9 +14,8 @@ models:
           - unique
           - not_null
           - relationships:
-              arguments:
-                to: ref('stg_market_variety')
-                field: variety_id
+              to: ref('stg_market_variety')
+              field: variety_id
       
       # Date Dimensions (from macro)
       - name: scrape_date
@@ -29,52 +28,46 @@ models:
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 2020
-                max_value: 2030
+              min_value: 2020
+              max_value: 2030
       
       - name: month
         description: "Month number (1-12)"
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 1
-                max_value: 12
+              min_value: 1
+              max_value: 12
       
       - name: day_of_week_num
         description: "Day of week (1=Sunday, 7=Saturday)"
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 1
-                max_value: 7
+              min_value: 1
+              max_value: 7
       
       - name: day_name
         description: "Day name (Monday, Tuesday, etc.)"
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+              values: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
       
       - name: week_in_month
         description: "Week number within month (1-4)"
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 1
-                max_value: 4
+              min_value: 1
+              max_value: 4
       
       - name: season
         description: "Southern hemisphere season"
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['Summer', 'Autumn', 'Winter', 'Spring']
+              values: ['Summer', 'Autumn', 'Winter', 'Spring']
       
       - name: is_weekend
         description: "1 for Saturday/Sunday, 0 for weekdays"
@@ -88,9 +81,8 @@ models:
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: -3000
-                max_value: 5000
+              min_value: -3000
+              max_value: 5000
       
       - name: total_market_kg
         tests:
@@ -103,9 +95,8 @@ models:
         description: "Difference from container average price"
         tests:
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: -3000
-                max_value: 5000
+              min_value: -3000
+              max_value: 5000
       
       # Referential Integrity
       - name: market
@@ -113,14 +104,12 @@ models:
         tests:
           - not_null
           - relationships:
-              arguments:
-                to: ref('stg_market_summary')
-                field: market
+              to: ref('stg_market_summary')
+              field: market
       
       - name: commodity
         tests:
           - not_null
           - relationships:
-              arguments:
-                to: ref('stg_market_summary')
-                field: commodity
+              to: ref('stg_market_summary')
+              field: commodity

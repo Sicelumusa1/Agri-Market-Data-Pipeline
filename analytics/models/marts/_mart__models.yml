@@ -10,26 +10,23 @@ models:
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: "date('2020-01-01')"
-                max_value: "current_date()"
+              min_value: "date('2020-01-01')"
+              max_value: "current_date()"
 
       - name: market
         description: "Market identifier"
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['joburg_market']
+              values: ['joburg_market']
 
       - name: commodity
         description: "Commodity name"
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['apples']
-                severity: warn
+              values: ['apples']
+              severity: warn
 
       - name: variety
         description: "Specific variety"
@@ -46,120 +43,108 @@ models:
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['CL 1', 'CL 2', 'LOWEST CLASS', 'UNKNOWN']
-                severity: warn
+              values: ['CL 1', 'CL 2', 'LOWEST CLASS', 'UNKNOWN']
+              severity: warn
 
       - name: avg_price_per_kg
         description: "Average price per kilogram"
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: -3000
-                max_value: 5000
+              min_value: -3000
+              max_value: 5000
 
       - name: max_price_achieved
         description: "Highest price achieved"
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: -3000
-                max_value: 5000
+              min_value: -3000
+              max_value: 5000
 
       - name: min_price_observed
         description: "Lowest price observed"
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: -3000
-                max_value: 5000
+              min_value: -3000
+              max_value: 5000
 
       - name: price_rank_within_commodity
         description: "Price rank among all varieties (1 = highest)"
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 1
-                max_value: 100
+              min_value: 1
+              max_value: 100
 
       - name: price_rank_within_variety
         description: "Rank within same variety across containers"
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 1
-                max_value: 50
+              min_value: 1
+              max_value: 50
 
       - name: container_score
         description: "Composite score for container performance"
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: -10000
-                max_value: 10000
+              min_value: -10000
+              max_value: 10000
 
       - name: container_recommendation
         description: "Recommendation for this container"
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['Recommended', 'Consider', 'Avoid']
+              values: ['Recommended', 'Consider', 'Avoid']
 
       - name: recommendation_reason
         description: "Reason for recommendation"
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: [
-                  'Best price with stable demand',
-                  'Highest price today',
-                  'Highest value per container',
-                  'Most stable pricing',
-                  'Balanced option'
-                ]
-                severity: warn
+              values: [
+                'Best price with stable demand',
+                'Highest price today',
+                'Highest value per container',
+                'Most stable pricing',
+                'Balanced option'
+              ]
+              severity: warn
 
       - name: volume_comparison
         description: "How today's volume compares to historical"
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values:
-                  - 'Insufficient Data'
-                  - 'Well Above Normal'
-                  - 'Above Normal'
-                  - 'Normal'
-                  - 'Below Normal'
-                  - 'Well Below Normal'
+              values:
+                - 'Insufficient Data'
+                - 'Well Above Normal'
+                - 'Above Normal'
+                - 'Normal'
+                - 'Below Normal'
+                - 'Well Below Normal'
 
       - name: price_stability
         description: "Price stability indicator"
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values:
-                  - 'Very Stable'
-                  - 'Stable'
-                  - 'Moderate'
-                  - 'Volatile'
+              values:
+                - 'Very Stable'
+                - 'Stable'
+                - 'Moderate'
+                - 'Volatile'
 
       - name: data_quality_flag
         description: "Confidence in this data"
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['High', 'Medium', 'Low']
+              values: ['High', 'Medium', 'Low']
 
       - name: is_premium
         description: "Whether this is a premium item (>20% above average)"
@@ -174,25 +159,23 @@ models:
     # Model-level tests
     tests:
       - dbt_utils.unique_combination_of_columns:
-          arguments:
-            combination_of_columns:
-              - market_date
-              - market
-              - commodity
-              - variety
-              - container_type
-              - grade
+          combination_of_columns:
+            - market_date
+            - market
+            - commodity
+            - variety
+            - container_type
+            - grade
 
 
       - dbt_utils.expression_is_true:
-          arguments:
-            expression: >
-              avg_price_per_kg >= min_price_observed - 5.0
-              and avg_price_per_kg <= max_price_achieved + 5.0
-            condition: >
-              avg_price_per_kg is not null
-              and min_price_observed is not null
-              and max_price_achieved is not null
+          expression: >
+            avg_price_per_kg >= min_price_observed - 5.0
+            and avg_price_per_kg <= max_price_achieved + 5.0
+          condition: >
+            avg_price_per_kg is not null
+            and min_price_observed is not null
+            and max_price_achieved is not null
 
   - name: time_pattern_analysis
     description: "Analysis of price patterns by day of week, week in month, and season"
@@ -203,154 +186,136 @@ models:
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['day_of_week', 'week_in_month', 'season']
+              values: ['day_of_week', 'week_in_month', 'season']
       
       - name: commodity
         description: "Type of produce"
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['apples']
-                severity: warn
+              values: ['apples']
+              severity: warn
       
       - name: day_name
         description: "Day of week name (for day_of_week patterns)"
         tests:
           - accepted_values:
-              arguments:
-                values: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-              config:
-                where: "pattern_type = 'day_of_week'"
+              values: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+            config:
+              where: "pattern_type = 'day_of_week'"
       
       - name: week_in_month
         description: "Week number within month (1-4, for week_in_month patterns)"
         tests:
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 1
-                max_value: 4
-              config:
-                where: "pattern_type = 'week_in_month'"
+              min_value: 1
+              max_value: 4
+            config:
+              where: "pattern_type = 'week_in_month'"
       
       - name: season
         description: "Southern hemisphere season"
         tests:
           - accepted_values:
-              arguments:
-                values: ['Summer', 'Autumn', 'Winter', 'Spring']
-              config:
-                where: "pattern_type = 'season'"
+              values: ['Summer', 'Autumn', 'Winter', 'Spring']
+            config:
+              where: "pattern_type = 'season'"
       
       - name: avg_price
         description: "Average price for this pattern"
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 0
-                max_value: 5000
+              min_value: 0
+              max_value: 5000
       
       - name: median_price
         description: "Median price (less sensitive to outliers)"
         tests:
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 0
-                max_value: 5000
+              min_value: 0
+              max_value: 5000
       
       - name: price_volatility
         description: "Standard deviation of price"
         tests:
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 0
-                max_value: 1000
+              min_value: 0
+              max_value: 1000
       
       - name: avg_daily_volume
         description: "Average daily volume for this pattern"
         tests:
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 0
-                max_value: 1000000
+              min_value: 0
+              max_value: 1000000
       
       - name: sample_size
         description: "Number of days in this pattern"
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 1
-                max_value: 365
+              min_value: 1
+              max_value: 365
       
       - name: confidence_score
         description: "Confidence in this pattern (High/Medium/Low)"
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['High', 'Medium', 'Low']
+              values: ['High', 'Medium', 'Low']
       
       - name: price_lower_bound
         description: "Lower bound of 95% confidence interval"
         tests:
           - dbt_utils.expression_is_true:
-              arguments:
-                expression: "price_lower_bound <= avg_price"
-                condition: "price_lower_bound is not null and avg_price is not null"
+              expression: "price_lower_bound <= avg_price"
+              condition: "price_lower_bound is not null and avg_price is not null"
       
       - name: price_upper_bound
         description: "Upper bound of 95% confidence interval"
         tests:
           - dbt_utils.expression_is_true:
-              arguments:
-                expression: "price_upper_bound >= avg_price"
-                condition: "price_upper_bound is not null and avg_price is not null"
+              expression: "price_upper_bound >= avg_price"
+              condition: "price_upper_bound is not null and avg_price is not null"
       
       - name: price_rank
         description: "Rank of this pattern (1 = best price)"
         tests:
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 1
-                max_value: 10
+              min_value: 1
+              max_value: 10
       
       - name: price_premium_vs_avg
         description: "Premium/discount compared to overall average"
         tests:
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: -5000
-                max_value: 5000
+              min_value: -5000
+              max_value: 5000
       
       - name: analysis_date
         description: "Date this analysis was run"
         tests:
           - not_null
           - dbt_utils.expression_is_true:
-              arguments:
-                expression: "analysis_date >= current_date() - 1"
+              expression: "analysis_date >= current_date() - 1"
       
       - name: analysis_period
         description: "Time period analyzed"
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['Last 90 days']
+              values: ['Last 90 days']
 
     # Model-level tests
     tests:
       - dbt_utils.unique_combination_of_columns:
-          arguments:
-            combination_of_columns:
-              - pattern_type
-              - commodity
-              - day_name
-              - week_in_month
-              - season
+          combination_of_columns:
+            - pattern_type
+            - commodity
+            - day_name
+            - week_in_month
+            - season
 
   - name: product_optimization
     description: "Analysis of product configurations to identify optimal packing strategies"
@@ -361,9 +326,8 @@ models:
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['apples']
-                severity: warn
+              values: ['apples']
+              severity: warn
       
       - name: variety
         description: "Specific variety"
@@ -380,105 +344,93 @@ models:
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['Small', 'Medium', 'Large', 'Extra Large', 'S', 'M', 'L', 'XL']
-                severity: warn
+              values: ['Small', 'Medium', 'Large', 'Extra Large', 'S', 'M', 'L', 'XL']
+              severity: warn
       
       - name: grade
         description: "Quality grade"
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['CL 1', 'CL 2', 'LOWEST CLASS', 'UNKNOWN']
-                severity: warn
+              values: ['CL 1', 'CL 2', 'LOWEST CLASS', 'UNKNOWN']
+              severity: warn
       
       - name: avg_price_per_kg
         description: "Average price per kilogram"
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 0
-                max_value: 5000
+              min_value: 0
+              max_value: 5000
       
       - name: avg_value_per_container
         description: "Average value per container"
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 0
-                max_value: 100000
+              min_value: 0
+              max_value: 100000
       
       - name: total_kg_sold
         description: "Total kilograms sold"
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 0
-                max_value: 10000000
+              min_value: 0
+              max_value: 10000000
       
       - name: market_share_percent
         description: "Percentage of total market volume"
         tests:
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 0
-                max_value: 100
+              min_value: 0
+              max_value: 100
       
       - name: optimization_score
         description: "Composite score (price volume) for ranking"
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 0
-                max_value: 10000
+              min_value: 0
+              max_value: 10000
       
       - name: price_stability
         description: "Price stability indicator"
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['Very Stable', 'Stable', 'Moderate', 'Volatile']
+              values: ['Very Stable', 'Stable', 'Moderate', 'Volatile']
       
       - name: volume_trend_pct
         description: "Percentage change in volume (30-day trend)"
         tests:
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: -100
-                max_value: 100000
+              min_value: -100
+              max_value: 100000
       
       - name: rank_by_price
         description: "Rank by price (1 = highest)"
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 1
-                max_value: 3000
+              min_value: 1
+              max_value: 3000
       
       - name: rank_by_volume
         description: "Rank by volume (1 = highest)"
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 1
-                max_value: 3000
+              min_value: 1
+              max_value: 3000
       
       - name: overall_rank
         description: "Overall rank based on optimization score"
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 1
-                max_value: 3000
+              min_value: 1
+              max_value: 3000
       
       
       - name: performance_tier
@@ -486,8 +438,7 @@ models:
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['Top Performer', 'Strong Performer', 'Average Performer', 'Low Performer']
+              values: ['Top Performer', 'Strong Performer', 'Average Performer', 'Low Performer']
       
       - name: analysis_date
         description: "Date this analysis was run"
@@ -499,23 +450,20 @@ models:
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['Last 90 days']
+              values: ['Last 90 days']
 
     # Model-level tests
     tests:
       - dbt_utils.unique_combination_of_columns:
-          arguments:
-            combination_of_columns:
-              - commodity
-              - variety
-              - container_type
-              - size_category
-              - grade
+          combination_of_columns:
+            - commodity
+            - variety
+            - container_type
+            - size_category
+            - grade
       
       - dbt_utils.expression_is_true:
-          arguments: 
-            expression: "optimization_score >= 0"
+          expression: "optimization_score >= 0"
 
 
   - name: market_trends_analysis
@@ -529,84 +477,75 @@ models:
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 0
-                max_value: 10000000
+              min_value: 0
+              max_value: 10000000
       
       - name: total_value
         description: "Total value sold (R)"
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 0
-                max_value: 100000000
+              min_value: 0
+              max_value: 100000000
       
       - name: avg_price_per_kg
         description: "Average price per kg"
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 0
-                max_value: 5000
+              min_value: 0
+              max_value: 5000
       
       - name: premium_value
         description: "Value of premium sales (>30% above avg)"
         tests:
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 0
-                max_value: 100000000
+              min_value: 0
+              max_value: 100000000
       
       - name: active_varieties
         description: "Number of active varieties"
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 1
-                max_value: 100
+              min_value: 1
+              max_value: 100
       
       # Change metrics
       - name: volume_change_wow_pct
         description: "Week-over-week volume change percentage"
         tests:
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: -100
-                max_value: 10000
+              min_value: -100
+              max_value: 10000
       
       - name: price_change_wow_pct
         description: "Week-over-week price change percentage"
         tests:
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: -100
-                max_value: 1000
-                where: "price_change_wow_pct is not null"
+              min_value: -100
+              max_value: 1000
+              where: "price_change_wow_pct is not null"
       
       - name: volume_change_yoy_pct
         description: "Year-over-year volume change percentage"
         tests:
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: -100
-                max_value: 5000
-                where: "volume_change_yoy_pct is not null"
-                config:
-                  severity: warn
+              min_value: -100
+              max_value: 5000
+              where: "volume_change_yoy_pct is not null"
+              config:
+                severity: warn
       
       - name: price_change_yoy_pct
         description: "Year-over-year price change percentage"
         tests:
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: -100
-                max_value: 500
-                where: "price_change_yoy_pct is not null"
-                config:
-                  severity: warn
+              min_value: -100
+              max_value: 500
+              where: "price_change_yoy_pct is not null"
+              config:
+                severity: warn
       
       # Trend directions
       - name: volume_trend_direction
@@ -614,16 +553,14 @@ models:
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['Surging Demand', 'Rising', 'Stable', 'Falling Demand']
+              values: ['Surging Demand', 'Rising', 'Stable', 'Falling Demand']
       
       - name: price_trend_direction
         description: "Direction of price trend (Rising/Stable/Dropping)"
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['Rising Prices', 'Stable', 'Dropping Prices']
+              values: ['Rising Prices', 'Stable', 'Dropping Prices']
       
       # Market health
       - name: market_health_score
@@ -631,17 +568,15 @@ models:
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 0
-                max_value: 100
+              min_value: 0
+              max_value: 100
       
       - name: market_condition
         description: "Market condition classification"
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['Booming', 'Growing', 'Stable', 'Slowing', 'Declining']
+              values: ['Booming', 'Growing', 'Stable', 'Slowing', 'Declining']
       
       # Risk metrics
       - name: price_volatility
@@ -649,18 +584,16 @@ models:
         tests:
           # - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 0
-                max_value: 100
-                where: "price_volatility is not null"
+              min_value: 0
+              max_value: 100
+              where: "price_volatility is not null"
       
       - name: premium_percentage
         description: "Percentage of sales that are premium"
         tests:
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 0
-                max_value: 100
+              min_value: 0
+              max_value: 100
       
       # Strategic flags
       - name: is_hot_opportunity
@@ -686,9 +619,8 @@ models:
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              arguments:
-                min_value: 1
-                max_value: 7
+              min_value: 1
+              max_value: 7
       
       # Metadata
       - name: analysis_date
@@ -699,39 +631,31 @@ models:
     # Model-level tests
     tests:
       - dbt_utils.unique_combination_of_columns:
-          arguments:
-            combination_of_columns:
-              - market_date
-              - market
-              - commodity
+          combination_of_columns:
+            - market_date
+            - market
+            - commodity
       
       - dbt_utils.expression_is_true:
-          arguments: 
-            expression: "avg_price_per_kg > 0"
-            condition: "avg_price_per_kg is not null"
+          expression: "avg_price_per_kg > 0"
+          condition: "avg_price_per_kg is not null"
         
       - dbt_utils.expression_is_true:
-          arguments:
-            expression: "total_volume >= 0"
+          expression: "total_volume >= 0"
       
       - dbt_utils.expression_is_true:
-          arguments:
-            expression: "premium_value <= total_value"
-            condition: "premium_value is not null and total_value is not null"
+          expression: "premium_value <= total_value"
+          condition: "premium_value is not null and total_value is not null"
       
       - dbt_utils.expression_is_true:
-          arguments:
-            expression: "premium_percentage between 0 and 100"
-            condition: "premium_percentage is not null"
+          expression: "premium_percentage between 0 and 100"
+          condition: "premium_percentage is not null"
       
       - dbt_utils.expression_is_true:
-          arguments:
-            expression: "data_confidence_score between 1 and 7"
+          expression: "data_confidence_score between 1 and 7"
       
       - dbt_utils.expression_is_true:
-          arguments:
-            expression: "market_health_score between 0 and 100"
+          expression: "market_health_score between 0 and 100"
       
       - dbt_utils.expression_is_true:
-          arguments:
-            expression: "case when is_hot_opportunity then price_trend_direction = 'Rising Prices' and volume_trend_direction = 'Surging Demand' else true end"
+          expression: "case when is_hot_opportunity then price_trend_direction = 'Rising Prices' and volume_trend_direction = 'Surging Demand' else true end"
