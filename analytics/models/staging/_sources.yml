@@ -5,7 +5,7 @@ version: 2
 sources:
   - name: market_data
     description: "Silver layer tables created by dlt pipeline"
-    database: agri-market-intelligence-dev
+    database: agrimi
     schema: market_data
     
     tables:
