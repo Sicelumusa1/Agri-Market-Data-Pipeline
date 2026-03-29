@@ -4,9 +4,10 @@
 Bring raw data into the pipeline.
 
 ## Contents
-- File landing conventions
-- Metadata extraction logic
 - Integration references to the web scraper repo
 
-## Notes
-- Does not include scraping logic itself
+## Implementation Repo:
+
+https://github.com/Sicelumusa1/market-data-ingestion-scraper 
+
+

@@ -1,9 +1,15 @@
+# AgrIntel
+
+https://lookerstudio.google.com/reporting/91e2b35c-aecc-42d6-8700-fdc075781c32
+
 This dashboard suite transforms daily agricultural market data into actionable intelligence for farmers. Four interconnected dashboards answer the core questions every farmer needs:
-Dashboard	Question	Decision
-Today's Market	"What should I sell today?"	Immediate harvest decisions
-Planning Calendar	"When should I sell?"	Harvest scheduling
-Product Strategy	"What configuration should I pack?"	Packaging optimization
-Market Intelligence	"Where is the market heading?"	Strategic planning
+
+Dashboard   |	Question    |	Decision
+|------------|---------------|------------|
+Today's Market  |   "What should I sell today?" |	Immediate harvest decisions
+Planning Calendar   |	"When should I sell?"   |	Harvest scheduling
+Product Strategy    |	"What configuration should I pack?" |	Packaging optimization
+Market Intelligence |   "Where is the market heading?"  |	Strategic planning
 
 
 ## Dashboard 1: Today's Market
