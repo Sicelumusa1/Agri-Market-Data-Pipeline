@@ -1,0 +1,159 @@
+id: market-data-pipeline
+namespace: agri-market
+description: |
+  Market Data Pipeline - Uses KV Store for configuration
+
+triggers:
+  - id: weekday-scraper-trigger
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 15 * * 1-6"
+    timezone: "Africa/Johannesburg"
+
+tasks:
+
+  # --------------------------------------------------
+  # Run Scraper
+  # --------------------------------------------------
+  - id: run_scraper
+    type: io.kestra.plugin.scripts.python.Commands
+    containerImage: "{{ kv('scraper_docker_image') }}"
+    commands:
+      - google-chrome --version
+      - chromedriver --version
+      - cd /app
+      - python main.py --fresh --headless
+    env:
+      TARGET_URL: "{{ kv('target_url') }}"
+      GCP_PROJECT_ID: "{{ kv('gcp_project') }}"
+      GCP_BUCKET_NAME: "{{ kv('gcs_bucket') }}"
+      GCP_UPLOAD_ENABLED: "{{ kv('gcp_upload_enabled') }}"
+      GCP_BUCKET_PATH: "{{ kv('gcs_prefix') }}"
+      SELENIUM_TIMEOUT: "{{ kv('selenium_timeout') }}"
+      PAGE_LOAD_DELAY: "{{ kv('page_load_delay') }}"
+      HEADLESS_MODE: "{{ kv('headless_mode') }}"
+      DEBUG_MODE: "{{ kv('debug_mode') }}"
+      MAX_RETRIES: "{{ kv('max_retries') }}"
+      RETRY_DELAY_SECONDS: "{{ kv('retry_delay_seconds') }}"
+      MAX_SCRAPING_PASSES: "{{ kv('max_scraping_passes') }}"
+
+  # --------------------------------------------------
+  # Run Extraction Tasks in Parallel
+  # --------------------------------------------------
+  - id: extract-all
+    type: io.kestra.plugin.core.flow.Parallel
+    description: Run all data extractions in parallel
+    tasks:
+
+      # ----------------------------------------------
+      # Summary Files
+      # ----------------------------------------------
+      - id: extract-summary
+        type: io.kestra.plugin.scripts.python.Commands
+        logLevel: INFO
+        taskRunner:
+          type: io.kestra.plugin.scripts.runner.docker.Docker
+          image: "{{ kv('docker_image') }}"
+          entryPoint: [""]
+        env:
+          SOURCE_TYPE: "gcs"
+          GCP_PROJECT_ID: "{{ kv('gcp_project') }}"
+          GCS_BUCKET_NAME: "{{ kv('gcs_bucket') }}"
+          GCS_FOLDER_PREFIX: "{{ kv('gcs_prefix') }}"
+          BIGQUERY_DATASET_NAME: "{{ kv('bq_dataset') }}"
+        commands:
+          - python /app/scripts/run_pipeline.py --type summary --source gcs --bucket {{ kv('gcs_bucket') }} --prefix {{ kv('gcs_prefix') }} --destination bigquery --dataset {{ kv('bq_dataset') }} --gcp-project {{ kv('gcp_project') }} --output-json
+
+      # ----------------------------------------------
+      # Container Files
+      # ----------------------------------------------
+      - id: extract-container
+        type: io.kestra.plugin.scripts.python.Commands
+        logLevel: INFO
+        taskRunner:
+          type: io.kestra.plugin.scripts.runner.docker.Docker
+          image: "{{ kv('docker_image') }}"
+          entryPoint: [""]
+        env:
+          SOURCE_TYPE: "gcs"
+          GCP_PROJECT_ID: "{{ kv('gcp_project') }}"
+          GCS_BUCKET_NAME: "{{ kv('gcs_bucket') }}"
+          GCS_FOLDER_PREFIX: "{{ kv('gcs_prefix') }}"
+          BIGQUERY_DATASET_NAME: "{{ kv('bq_dataset') }}"
+        commands:
+          - python /app/scripts/run_pipeline.py --type container --source gcs --bucket {{ kv('gcs_bucket') }} --prefix {{ kv('gcs_prefix') }} --destination bigquery --dataset {{ kv('bq_dataset') }} --gcp-project {{ kv('gcp_project') }} --output-json
+
+      # ----------------------------------------------
+      # Variety Files
+      # ----------------------------------------------
+      - id: extract-variety
+        type: io.kestra.plugin.scripts.python.Commands
+        logLevel: INFO
+        taskRunner:
+          type: io.kestra.plugin.scripts.runner.docker.Docker
+          image: "{{ kv('docker_image') }}"
+          entryPoint: [""]
+        env:
+          SOURCE_TYPE: "gcs"
+          GCP_PROJECT_ID: "{{ kv('gcp_project') }}"
+          GCS_BUCKET_NAME: "{{ kv('gcs_bucket') }}"
+          GCS_FOLDER_PREFIX: "{{ kv('gcs_prefix') }}"
+          BIGQUERY_DATASET_NAME: "{{ kv('bq_dataset') }}"
+        commands:
+          - python /app/scripts/run_pipeline.py --type variety --source gcs --bucket {{ kv('gcs_bucket') }} --prefix {{ kv('gcs_prefix') }} --destination bigquery --dataset {{ kv('bq_dataset') }} --gcp-project {{ kv('gcp_project') }} --output-json
+
+  # --------------------------------------------------
+  # Success Notification
+  # --------------------------------------------------
+  - id: on-success
+    type: io.kestra.plugin.core.log.Log
+    level: INFO
+    message: |
+      Pipeline: {{ flow.id }}
+      Execution: {{ execution.id }}
+      Bucket: {{ kv('gcs_bucket') }}
+      Prefix: {{ kv('gcs_prefix') }}
+      Dataset: {{ kv('bq_dataset') }}
+
+  # --------------------------------------------------
+  # Run dbt Models
+  # --------------------------------------------------
+  - id: run-dbt-models
+    type: io.kestra.plugin.scripts.python.Commands
+    description: "Run DBT models in container"
+    taskRunner:
+      type: io.kestra.plugin.scripts.runner.docker.Docker
+      image: "{{ kv('dbt_docker_image') }}"
+      volumes:
+        - /home/scelumusa/kestra/dbt:/mnt/config:ro
+
+    env:
+      DBT_PROFILES_DIR: /mnt/config
+      DBT_PROJECT_DIR: /app  
+
+    commands:
+      - ls -la /mnt/config
+      - rm -rf /app/target /app/dbt_modules
+      - dbt debug --profiles-dir /mnt/config
+      - dbt deps --project-dir /app --profiles-dir /mnt/config
+      - dbt run --project-dir /app --profiles-dir /mnt/config
+
+# --------------------------------------------------
+# Error Handling
+# --------------------------------------------------
+errors:
+  - id: on-error
+    type: io.kestra.plugin.core.log.Log
+    level: ERROR
+    message: |
+      ============================================================
+      MARKET DATA PIPELINE FAILED
+      ============================================================
+      Time:         {{ taskrun.startDate }}
+      Namespace:    {{ flow.namespace }}
+      Flow:         {{ flow.id }}
+      Execution ID: {{ execution.id }}
+      Task:         {{ task.id }}
+
+      ERROR DETAILS:
+      {{ taskrun.error.message ?? 'No error message available' }}
+      ============================================================
